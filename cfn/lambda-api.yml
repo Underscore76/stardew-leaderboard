@@ -1,0 +1,108 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: FastAPI Lambda and HTTP API origin for the shared-domain /api path.
+
+Parameters:
+  FrontendUrl:
+    Type: String
+    Default: https://stardewspeedruns.net
+  TableName:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: /leaderboard-ddb/table-name
+  TableArn:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: /leaderboard-ddb/table-arn
+  DiscordSecretArn:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: /leaderboard-secret/secret-arn
+
+Resources:
+  HttpAPI:
+    Type: AWS::Serverless::HttpApi
+    Properties:
+      StageName: $default
+      DisableExecuteApiEndpoint: false
+      DefaultRouteSettings:
+        ThrottlingBurstLimit: 20
+        ThrottlingRateLimit: 10
+
+  ApiLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${AWS::StackName}-api
+      RetentionInDays: 14
+
+  ApiRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: ApiRuntime
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: !GetAtt ApiLogGroup.Arn
+              - Effect: Allow
+                Action:
+                  - dynamodb:GetItem
+                  - dynamodb:Query
+                  - dynamodb:PutItem
+                  - dynamodb:UpdateItem
+                  - dynamodb:DeleteItem
+                Resource: !Ref TableArn
+              - Effect: Allow
+                Action: secretsmanager:GetSecretValue
+                Resource: !Ref DiscordSecretArn
+
+  ApiFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub ${AWS::StackName}-api
+      Description: leaderboard api
+      Runtime: python3.13
+      Architectures: [x86_64]
+      Handler: leaderboard_api.main.handler
+      CodeUri: ../build/lambda/
+      MemorySize: 512
+      Timeout: 30
+      Role: !GetAtt ApiRole.Arn
+      Environment:
+        Variables:
+          FRONTEND_URL: !Ref FrontendUrl
+          DYNAMODB_TABLE_NAME: !Ref TableName
+          DISCORD_SECRET_ID: !Ref DiscordSecretArn
+      Events:
+        Requests:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpAPI
+            PayloadFormatVersion: "2.0"
+      Tags:
+        project: leaderboard
+
+  ApiOriginParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: /leaderboard-api/origin-domain
+      Type: String
+      Value: !Sub ${HttpAPI}.execute-api.${AWS::Region}.${AWS::URLSuffix}
+
+Outputs:
+  ApiOriginDomain:
+    Value: !Sub ${HttpAPI}.execute-api.${AWS::Region}.${AWS::URLSuffix}
+  HealthUrl:
+    Value: !Sub https://${HttpAPI}.execute-api.${AWS::Region}.${AWS::URLSuffix}/api/health
+  FunctionName:
+    Value: !Ref ApiFunction
+  LogGroupName:
+    Value: !Ref ApiLogGroup

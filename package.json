@@ -5,7 +5,7 @@
     "type": "module",
     "scripts": {
         "app": "cd app && npm run dev",
-        "api": "cd api && uv run --env-file .env fastapi dev api/main.py",
+        "api": "cd api && uv run --env-file .env fastapi dev --entrypoint leaderboard_api.main:app",
         "dev": "concurrently \"npm:app\" \"npm:api\""
     },
     "devDependencies": {

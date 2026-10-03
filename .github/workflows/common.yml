@@ -1,29 +1,36 @@
-name: Deploying Common CFN
+name: Deploy Infrastructure
 
 on:
   push:
-    branches: ["main"]
+    branches: [main]
     paths:
-      - "cfn/**"
+      - 'cfn/dynamodb.yml'
+      - 'cfn/secrets.yml'
+      - '.github/workflows/cfn.yml'
   workflow_dispatch:
 
 permissions:
   contents: read
-  id-token: write # This is required for requesting the JWT  
+  id-token: write
+
+concurrency:
+  group: deploy-infrastructure-main
+  cancel-in-progress: false
+
+env:
+  AWS_REGION: us-east-1
 
 jobs:
   deploy:
-    name: Deploy AWS base resources
+    name: Deploy shared project infrastructure
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v4
-
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ secrets.AWS_ASSUME_ROLE_ARN }}
-          role-session-name: github-action-role
+          role-session-name: github-infrastructure
           aws-region: us-east-1
 
       - name: deploy database

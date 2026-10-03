@@ -1,0 +1,24 @@
+[project]
+name = "stardew-leaderboard"
+version = "0.1.0"
+description = "Stardew Valley leaderboard API"
+readme = "README.md"
+requires-python = ">=3.13,<=3.14"
+dependencies = [
+    "boto3>=1.43.108",
+    "fastapi[standard]>=0.142.2",
+    "mangum>=0.22.0",
+    "httpx>=0.28.1,<1",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/leaderboard_api"]
+
+[dependency-groups]
+dev = [
+    "boto3-stubs[dynamodb,secretsmanager,ssm]>=1.43.108",
+]
