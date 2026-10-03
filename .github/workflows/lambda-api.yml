@@ -43,7 +43,7 @@ jobs:
             --python-platform x86_64-manylinux2014 \
             --only-binary :all: \
             --require-hashes \
-            --nodeps \
+            --no-deps \
             --target "$LAMBDA_DIR" \
             --requirements requirements-lambda.txt
           cp -r api/src/leaderboard_api "$LAMBDA_DIR/leaderboard_api"
