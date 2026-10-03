@@ -72,7 +72,7 @@ Resources:
       Runtime: python3.13
       Architectures: [x86_64]
       Handler: leaderboard_api.main.handler
-      CodeUri: build/lambda/
+      CodeUri: ../build/lambda/
       MemorySize: 512
       Timeout: 30
       Role: !GetAtt ApiRole.Arn
