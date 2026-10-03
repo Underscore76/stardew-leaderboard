@@ -1,0 +1,56 @@
+
+Resources:
+  DynamoDBTable:
+    Type: AWS::DynamoDB::Table
+    DeletionPolicy: Delete
+    UpdateReplacePolicy: Retain
+    Properties:
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: pk
+          AttributeType: S
+        - AttributeName: sk
+          AttributeType: S
+      KeySchema:
+        - AttributeName: pk
+          KeyType: HASH
+        - AttributeName: sk
+          KeyType: RANGE
+      GlobalSecondaryIndexes:
+        - IndexName: many_to_many
+          Projection:
+            ProjectionType: ALL
+          KeySchema:
+            - AttributeName: sk
+              KeyType: HASH
+            - AttributeName: pk
+              KeyType: RANGE
+      Tags:
+        - Key: project
+          Value: leaderboard
+
+  TableNameParam:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: /leaderboard-ddb/table-name
+      Type: String
+      Value: !Ref DynamoDBTable
+      Description: The name of the DynamoDB table
+      Tags:
+        project: leaderboard
+
+  TableArnParam:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: /leaderboard-ddb/table-arn
+      Type: String
+      Value: !GetAtt DynamoDBTable.Arn
+      Description: The ARN of the DynamoDB table
+      Tags:
+        project: leaderboard
+
+Outputs:
+  TableArn:
+    Value: !GetAtt DynamoDBTable.Arn
+  TableName:
+    Value: !Ref DynamoDBTable

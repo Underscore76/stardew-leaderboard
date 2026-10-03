@@ -1,0 +1,33 @@
+name: Deploying Common CFN
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - "cfn/**"
+  workflow_dispatch:
+
+permissions:
+  id-token: write # This is required for requesting the JWT  
+
+jobs:
+  deploy:
+    name: Deploy AWS base resources
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ASSUME_ROLE_ARN }}
+          role-session-name: github-action-role
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: deploy database
+        uses: aws-actions/aws-cloudformation-github-deploy@v1
+        with:
+            name: leaderboard-ddb
+            template: cfn/dynamodb.yml
+            no-fail-on-empty-changeset: "1"

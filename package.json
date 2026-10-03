@@ -1,0 +1,14 @@
+{
+    "name": "stardew-leaderboard",
+    "private": true,
+    "version": "0.0.0",
+    "type": "module",
+    "scripts": {
+        "app": "cd app && npm run dev",
+        "api": "cd api && uv run fastapi dev api/main.py",
+        "dev": "concurrently \"npm:app\" \"npm:api\""
+    },
+    "devDependencies": {
+        "concurrently": "^8.2.2"
+    }
+}
