@@ -8,6 +8,7 @@ on:
   workflow_dispatch:
 
 permissions:
+  contents: read
   id-token: write # This is required for requesting the JWT  
 
 jobs:
@@ -23,7 +24,7 @@ jobs:
         with:
           role-to-assume: ${{ secrets.AWS_ASSUME_ROLE_ARN }}
           role-session-name: github-action-role
-          aws-region: ${{ secrets.AWS_REGION }}
+          aws-region: us-east-1
 
       - name: deploy database
         uses: aws-actions/aws-cloudformation-github-deploy@v1
