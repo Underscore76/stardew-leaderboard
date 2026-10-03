@@ -49,22 +49,22 @@ jobs:
           cp -r api/src/leaderboard_api "$LAMBDA_DIR/leaderboard_api"
           ls -la "$LAMBDA_DIR"
       
-      # - name: Configure AWS credentials
-      #   uses: aws-actions/configure-aws-credentials@v4
-      #   with:
-      #     role-to-assume: ${{ secrets.AWS_ASSUME_ROLE_ARN }}
-      #     role-session-name: github-action-role
-      #     aws-region: us-east-1
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ASSUME_ROLE_ARN }}
+          role-session-name: github-action-role
+          aws-region: us-east-1
       
-      # - name: Upload Lambda package
-      #   env:
-      #     ARTIFACT_BUCKET: ${{ secrets.ARTIFACT_BUCKET }}
-      #   run: |
-      #     aws cloudformation package \
-      #       --template-file cfn/lambda-api.yml \
-      #       --s3-bucket "$ARTIFACT_BUCKET" \
-      #       --s3-prefix stardew-leaderboard/api/${{ github.sha}} \
-      #       --output-template-file api/build/packaged-api.yml
+      - name: Upload Lambda package
+        env:
+          ARTIFACT_BUCKET: ${{ secrets.ARTIFACT_BUCKET }}
+        run: |
+          aws cloudformation package \
+            --template-file cfn/lambda-api.yml \
+            --s3-bucket "$ARTIFACT_BUCKET" \
+            --s3-prefix stardew-leaderboard/api/${{ github.sha }} \
+            --output-template-file api/build/packaged-api.yml
 
       # - name: Deploy Lambda API
       #   id: deploy
