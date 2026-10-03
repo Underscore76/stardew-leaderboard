@@ -32,3 +32,10 @@ jobs:
             name: leaderboard-ddb
             template: cfn/dynamodb.yml
             no-fail-on-empty-changeset: "1"
+
+      - name: deploy secrets
+        uses: aws-actions/aws-cloudformation-github-deploy@v1
+        with:
+            name: leaderboard-secrets
+            template: cfn/secrets.yml
+            no-fail-on-empty-changeset: "1"

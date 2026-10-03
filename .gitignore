@@ -14,3 +14,8 @@ wheels/
 node_modules/
 
 .DS_Store
+
+# Local configuration and credentials
+.env
+.env.*
+!.env.example
